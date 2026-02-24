@@ -13,10 +13,16 @@ const app = express();
 
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "http://localhost:5173",
-    credentials: true
+    origin: [
+      "http://localhost:5173",                    // Local development
+      "https://health-finder-zeta.vercel.app",   // Your Vercel frontend
+      "https://*.vercel.app"                      // All Vercel subdomains
+    ],
+    credentials: true,
+    optionsSuccessStatus: 200
   })
 );
+
 app.use(express.json());
 
 // disclaimer and safety message endpoint (optional)
