@@ -14,7 +14,7 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("token") || localStorage.getItem("hs_token");
     if (token) {
       api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
       fetchProfile();
@@ -37,12 +37,14 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (userData) => {
     localStorage.setItem("token", userData.token);
+    localStorage.setItem("hs_token", userData.token);
     api.defaults.headers.common["Authorization"] = `Bearer ${userData.token}`;
     setUser(userData);
   };
 
   const logout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("hs_token");
     delete api.defaults.headers.common["Authorization"];
     setUser(null);
   };

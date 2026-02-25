@@ -21,13 +21,19 @@ import { notFound, errorHandler } from "./middleware/errorMiddleware.js";
 
 const app = express();
 
+const allowedOrigins = new Set([
+  "http://localhost:5173",
+  process.env.CLIENT_URL
+].filter(Boolean));
+
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",
-      "https://health-finder-zeta.vercel.app",
-      "https://*.vercel.app"
-    ],
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.has(origin)) return callback(null, true);
+      if (/^https:\/\/[a-z0-9-]+\.vercel\.app$/i.test(origin)) return callback(null, true);
+      return callback(new Error("Not allowed by CORS"));
+    },
     credentials: true,
     optionsSuccessStatus: 200
   })
