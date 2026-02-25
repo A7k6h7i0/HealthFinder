@@ -1,42 +1,59 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 import api from "../api/axiosClient";
 
 const AuthContext = createContext(null);
 
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+  return context};
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null); // {_id, name, email, role}
+  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem("hs_token");
-    if (!token) {
+    const token = localStorage.getItem("token");
+    if (token) {
+      api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+      fetchProfile();
+    } else {
       setLoading(false);
-      return;
     }
-    api
-      .get("/auth/me")
-      .then((res) => setUser(res.data))
-      .catch(() => {
-        localStorage.removeItem("hs_token");
-      })
-      .finally(() => setLoading(false));
   }, []);
 
-  const login = (data) => {
-    localStorage.setItem("hs_token", data.token);
-    setUser({ _id: data._id, name: data.name, email: data.email, role: data.role });
+  const fetchProfile = async () => {
+    try {
+      const res = await api.get("/auth/me");
+      setUser(res.data);
+    } catch (err) {
+      console.error("Failed to fetch profile");
+      logout();
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const login = async (userData) => {
+    localStorage.setItem("token", userData.token);
+    api.defaults.headers.common["Authorization"] = `Bearer ${userData.token}`;
+    setUser(userData);
   };
 
   const logout = () => {
-    localStorage.removeItem("hs_token");
+    localStorage.removeItem("token");
+    delete api.defaults.headers.common["Authorization"];
     setUser(null);
   };
 
+  const updateUser = (updatedData) => {
+    setUser((prev) => ({ ...prev, ...updatedData }));
+  };
+
   return (
-    <AuthContext.Provider value={{ user, login, logout, loading }}>
+    <AuthContext.Provider value={{ user, login, logout, updateUser, loading }}>
       {children}
     </AuthContext.Provider>
   );
 };
-
-export const useAuth = () => useContext(AuthContext);
