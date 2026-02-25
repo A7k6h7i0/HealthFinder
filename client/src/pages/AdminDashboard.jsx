@@ -4,18 +4,39 @@ import ServiceCard from "../components/ServiceCard";
 
 const AdminDashboard = () => {
   const [pending, setPending] = useState([]);
+  const [approved, setApproved] = useState([]);
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(false);
 
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [pRes, rRes] = await Promise.all([
+      const [pendingResult, approvedResult, reportResult] = await Promise.allSettled([
         api.get("/admin/services/pending"),
+        api.get("/admin/services/approved"),
         api.get("/admin/reports")
       ]);
-      setPending(pRes.data);
-      setReports(rRes.data);
+
+      if (pendingResult.status === "fulfilled") {
+        setPending(pendingResult.value.data);
+      } else {
+        setPending([]);
+        console.error("Failed to fetch pending submissions");
+      }
+
+      if (reportResult.status === "fulfilled") {
+        setReports(reportResult.value.data);
+      } else {
+        setReports([]);
+        console.error("Failed to fetch reports");
+      }
+
+      if (approvedResult.status === "fulfilled") {
+        setApproved(approvedResult.value.data);
+      } else {
+        setApproved([]);
+        console.error("Failed to fetch approved services");
+      }
     } catch (err) {
       console.error("Failed to fetch admin data");
     } finally {
@@ -100,6 +121,32 @@ const AdminDashboard = () => {
           {pending.length === 0 && (
             <p className="text-xs text-slate-500">
               No pending submissions right now.
+            </p>
+          )}
+        </div>
+      </section>
+
+      <section className="space-y-3">
+        <h3 className="text-sm font-semibold text-slate-800">
+          Approved services ({approved.length})
+        </h3>
+        <div className="grid md:grid-cols-2 gap-4">
+          {approved.map((s) => (
+            <div key={s._id} className="space-y-2">
+              <ServiceCard service={s} showReportButton={false} />
+              <div className="flex gap-2 text-xs">
+                <button
+                  onClick={() => handleDelete(s._id)}
+                  className="px-3 py-1 rounded-md bg-red-600 text-white hover:bg-red-700"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          ))}
+          {approved.length === 0 && (
+            <p className="text-xs text-slate-500">
+              No approved services available.
             </p>
           )}
         </div>

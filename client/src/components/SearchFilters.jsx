@@ -19,7 +19,7 @@ const flattenDiseaseHierarchy = (nodes, level = 0, path = []) => {
   return rows;
 };
 
-const SearchFilters = ({ filters, onChange }) => {
+const SearchFilters = ({ filters, onChange, onSearch }) => {
   const [diseaseQuery, setDiseaseQuery] = useState(filters.disease || "");
   const [diseaseOptions, setDiseaseOptions] = useState([]);
   const [filteredOptions, setFilteredOptions] = useState([]);
@@ -80,6 +80,17 @@ const SearchFilters = ({ filters, onChange }) => {
     onChange({ ...filters, diseaseId: disease._id, disease: disease.name });
   };
 
+  const handleSearchClick = () => {
+    if (typeof onSearch === "function") {
+      onSearch({
+        ...filters,
+        disease: diseaseQuery,
+        page: 1
+      });
+    }
+    setShowSuggestions(false);
+  };
+
   return (
     <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-5">
       <div className="relative" ref={wrapperRef}>
@@ -88,6 +99,12 @@ const SearchFilters = ({ filters, onChange }) => {
           type="text"
           value={diseaseQuery}
           onChange={handleDiseaseChange}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              handleSearchClick();
+            }
+          }}
           onFocus={() => {
             setFilteredOptions(filterSuggestions(diseaseQuery));
             setShowSuggestions(true);
@@ -121,6 +138,13 @@ const SearchFilters = ({ filters, onChange }) => {
       <div className="flex justify-end gap-2 mt-4">
         <button
           type="button"
+          onClick={handleSearchClick}
+          className="px-4 py-2 text-sm text-white bg-teal-600 rounded-md hover:bg-teal-700"
+        >
+          Search
+        </button>
+        <button
+          type="button"
           onClick={() => {
             onChange({
               diseaseId: "",
@@ -128,6 +152,9 @@ const SearchFilters = ({ filters, onChange }) => {
             });
             setDiseaseQuery("");
             setFilteredOptions(diseaseOptions);
+            if (typeof onSearch === "function") {
+              onSearch({ diseaseId: "", disease: "", page: 1 });
+            }
           }}
           className="px-4 py-2 text-sm text-slate-600 hover:text-slate-900"
         >

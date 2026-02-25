@@ -1,6 +1,7 @@
 import express from "express";
 import {
   getPendingServices,
+  getApprovedServices,
   approveService,
   rejectService,
   updateServiceBeforeApproval,
@@ -19,6 +20,7 @@ router.use(protect, requireRole("admin"));
 
 // Center management
 router.get("/services/pending", getPendingServices);
+router.get("/services/approved", getApprovedServices);
 router.put("/services/:id/approve", approveService);
 router.put("/services/:id/reject", rejectService);
 router.put("/services/:id", updateServiceBeforeApproval);

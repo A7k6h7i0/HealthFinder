@@ -11,6 +11,42 @@ const hasRecentOtpVerification = (user) => {
 };
 
 const isNonEmpty = (value) => String(value || "").trim().length > 0;
+const isValidIndianPincode = (value) => /^[1-9]\d{5}$/.test(String(value || "").trim());
+const isValidIndianMobile = (value) => {
+  const raw = String(value || "").trim();
+  const digits = raw.replace(/\D/g, "");
+  if (raw.startsWith("+91")) return /^[6-9]\d{9}$/.test(digits.slice(2));
+  if (digits.length === 12 && digits.startsWith("91")) return /^[6-9]\d{9}$/.test(digits.slice(2));
+  if (digits.length === 10) return /^[6-9]\d{9}$/.test(digits);
+  return false;
+};
+const isValidEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || "").trim());
+const isValidWebsite = (value) => {
+  const raw = String(value || "").trim();
+  if (!raw) return true;
+  try {
+    const parsed = new URL(raw);
+    return parsed.protocol === "http:" || parsed.protocol === "https:";
+  } catch {
+    return false;
+  }
+};
+const isValidLicenseNumber = (value) => /^[A-Za-z0-9][A-Za-z0-9\-\/]{5,29}$/.test(String(value || "").trim());
+const isValidBusinessName = (value) => /^[A-Za-z0-9&.,()\-'\s]{2,120}$/.test(String(value || "").trim());
+const isValidAddress = (value) => /^[A-Za-z0-9,./#()\-'\s]{10,250}$/.test(String(value || "").trim());
+const isValidDescription = (value) => {
+  const text = String(value || "").trim();
+  return text.length >= 30 && text.length <= 2000;
+};
+const isValidPhotoUrl = (value) => {
+  try {
+    const parsed = new URL(String(value || "").trim());
+    if (!(parsed.protocol === "http:" || parsed.protocol === "https:")) return false;
+    return /\.(jpg|jpeg|png|webp)(\?.*)?$/i.test(parsed.pathname + parsed.search);
+  } catch {
+    return false;
+  }
+};
 
 // Search centers with filters and pagination
 export const searchCenters = async (req, res) => {
@@ -99,10 +135,6 @@ export const uploadBusinessLicenseForAddCenter = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    if (user.role !== "business") {
-      return res.status(403).json({ message: "Only business accounts can upload business license" });
-    }
-
     if (!hasRecentOtpVerification(user)) {
       return res.status(400).json({ message: "Complete OTP verification before uploading license" });
     }
@@ -111,13 +143,19 @@ export const uploadBusinessLicenseForAddCenter = async (req, res) => {
       return res.status(400).json({ message: "License upload is required" });
     }
 
-    const { businessName, licenseNumber } = req.body;
-    if (!isNonEmpty(businessName)) {
-      return res.status(400).json({ message: "Business name is required" });
+    const allowedExt = new Set([".pdf", ".jpg", ".jpeg", ".png", ".webp"]);
+    const fileExt = String(req.file.originalname || "").toLowerCase().slice(String(req.file.originalname || "").lastIndexOf("."));
+    if (!allowedExt.has(fileExt)) {
+      return res.status(400).json({ message: "Invalid license file format" });
     }
 
-    if (!isNonEmpty(licenseNumber)) {
-      return res.status(400).json({ message: "License number is required" });
+    const { businessName, licenseNumber } = req.body;
+    if (!isValidBusinessName(businessName)) {
+      return res.status(400).json({ message: "Enter a valid business name (2-120 chars)" });
+    }
+
+    if (!isValidLicenseNumber(licenseNumber)) {
+      return res.status(400).json({ message: "Enter a valid license number" });
     }
 
     const relativePath = `/uploads/licenses/${req.file.filename}`;
@@ -158,7 +196,8 @@ export const createCenter = async (req, res) => {
       serviceDetails,
       photos,
       businessName,
-      licenseNumber
+      licenseNumber,
+      flowType
     } = req.body;
 
     const user = await User.findById(req.user._id);
@@ -170,31 +209,46 @@ export const createCenter = async (req, res) => {
       return res.status(400).json({ message: "Phone OTP verification is required before adding a center" });
     }
 
-    if (!isNonEmpty(name)) return res.status(400).json({ message: "Center name is required" });
     if (!isNonEmpty(diseaseId)) return res.status(400).json({ message: "Disease category is required" });
     if (!isNonEmpty(address) || !isNonEmpty(city) || !isNonEmpty(state)) {
       return res.status(400).json({ message: "Complete location details are required" });
     }
-    if (!isNonEmpty(phone)) return res.status(400).json({ message: "Contact number is required" });
-    if (!isNonEmpty(email)) return res.status(400).json({ message: "Email is required" });
-    if (!isNonEmpty(description)) return res.status(400).json({ message: "Description is required" });
+    if (!isValidAddress(address)) return res.status(400).json({ message: "Enter a valid address (10-250 chars)" });
+    if (!isValidIndianMobile(phone)) return res.status(400).json({ message: "Enter a valid India (+91) contact number" });
+    if (!isValidEmail(email)) return res.status(400).json({ message: "Enter a valid email address" });
+    if (!isValidDescription(description)) return res.status(400).json({ message: "Description must be 30-2000 characters" });
+    if (isNonEmpty(pincode) && !isValidIndianPincode(pincode)) {
+      return res.status(400).json({ message: "Enter a valid 6-digit pincode" });
+    }
+    if (!isValidWebsite(website)) {
+      return res.status(400).json({ message: "Website must be a valid http/https URL" });
+    }
+    if (Array.isArray(photos) && photos.some((url) => !isValidPhotoUrl(url))) {
+      return res.status(400).json({ message: "All photo URLs must be valid image links (jpg/jpeg/png/webp)" });
+    }
 
     const disease = await Disease.findById(diseaseId);
     if (!disease) {
       return res.status(400).json({ message: "Invalid disease selected" });
     }
 
+    const isBusinessFlow = flowType === "business";
+
+    if (!isBusinessFlow && !isNonEmpty(name)) {
+      return res.status(400).json({ message: "Center name is required" });
+    }
+
     let isVerified = false;
     let businessLicenseNumber = "";
     let licenseUrl = "";
 
-    if (user.role === "business") {
-      if (!isNonEmpty(businessName)) {
-        return res.status(400).json({ message: "Business name is required" });
+    if (isBusinessFlow) {
+      if (!isValidBusinessName(businessName)) {
+        return res.status(400).json({ message: "Enter a valid business name (2-120 chars)" });
       }
 
-      if (!isNonEmpty(licenseNumber)) {
-        return res.status(400).json({ message: "License number is required" });
+      if (!isValidLicenseNumber(licenseNumber)) {
+        return res.status(400).json({ message: "Enter a valid license number" });
       }
 
       if (!isNonEmpty(serviceDetails)) {
@@ -215,7 +269,7 @@ export const createCenter = async (req, res) => {
     }
 
     const center = await Center.create({
-      name: String(name).trim(),
+      name: isBusinessFlow ? String(businessName).trim() : String(name).trim(),
       diseaseId,
       diseaseName: diseaseName || disease.name,
       ownerId: user._id,
@@ -242,7 +296,7 @@ export const createCenter = async (req, res) => {
     await User.findByIdAndUpdate(user._id, {
       addCenterOtpVerifiedAt: null,
       addCenterOtpVerifiedPhone: "",
-      ...(user.role === "business" ? { addCenterLicenseVerifiedAt: null } : {})
+      ...(isBusinessFlow ? { addCenterLicenseVerifiedAt: null } : {})
     });
 
     res.status(201).json(center);

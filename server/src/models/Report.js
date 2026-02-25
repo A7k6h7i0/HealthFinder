@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const reportSchema = new mongoose.Schema(
   {
-    service: { type: mongoose.Schema.Types.ObjectId, ref: "Service", required: true },
+    service: { type: mongoose.Schema.Types.ObjectId, ref: "Center", required: true },
     reportedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
     reason: { type: String, required: true },
     status: { type: String, enum: ["open", "reviewed"], default: "open" }

@@ -15,6 +15,19 @@ export const getPendingServices = async (req, res) => {
   }
 };
 
+// Get approved centers
+export const getApprovedServices = async (req, res) => {
+  try {
+    const centers = await Center.find({ status: "approved" })
+      .populate("ownerId", "name email phone role businessName")
+      .sort({ verifiedAt: -1, updatedAt: -1 });
+    res.json(centers);
+  } catch (err) {
+    console.error("Get approved error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 // Approve center
 export const approveService = async (req, res) => {
   try {

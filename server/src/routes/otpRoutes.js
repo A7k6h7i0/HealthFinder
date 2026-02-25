@@ -10,10 +10,8 @@ const validPhone = (value) => {
   const digits = raw.replace(/\D/g, "");
 
   if (raw.startsWith("+91")) return /^[6-9]\d{9}$/.test(digits.slice(2));
-  if (raw.startsWith("+1")) return /^[2-9]\d{2}[2-9]\d{6}$/.test(digits.slice(1));
   if (digits.length === 12 && digits.startsWith("91")) return /^[6-9]\d{9}$/.test(digits.slice(2));
-  if (digits.length === 11 && digits.startsWith("1")) return /^[2-9]\d{2}[2-9]\d{6}$/.test(digits.slice(1));
-  if (digits.length === 10) return /^[6-9]\d{9}$/.test(digits) || /^[2-9]\d{2}[2-9]\d{6}$/.test(digits);
+  if (digits.length === 10) return /^[6-9]\d{9}$/.test(digits);
   return false;
 };
 
@@ -32,7 +30,7 @@ router.post(
   [
     body("phone")
       .custom((value) => validPhone(value))
-      .withMessage("Enter a valid India (+91) or US (+1) phone number"),
+      .withMessage("Enter a valid India (+91) phone number"),
     body("purpose")
       .isIn(["mobile_verification", "add_center_normal", "add_center_business"])
       .withMessage("Invalid purpose")
@@ -46,7 +44,7 @@ router.post(
   [
     body("phone")
       .custom((value) => validPhone(value))
-      .withMessage("Enter a valid India (+91) or US (+1) phone number"),
+      .withMessage("Enter a valid India (+91) phone number"),
     body("otp").isLength({ min: 6, max: 6 }).withMessage("OTP must be 6 digits"),
     body("purpose")
       .isIn(["mobile_verification", "add_center_normal", "add_center_business"])
@@ -62,7 +60,7 @@ router.post(
   [
     body("phone")
       .custom((value) => validPhone(value))
-      .withMessage("Enter a valid India (+91) or US (+1) phone number"),
+      .withMessage("Enter a valid India (+91) phone number"),
     body("purpose")
       .isIn(["mobile_verification", "add_center_normal", "add_center_business"])
       .withMessage("Invalid purpose")

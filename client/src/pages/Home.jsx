@@ -33,14 +33,14 @@ const Home = () => {
   const handleSearch = (e) => {
     e.preventDefault();
     if (search.trim()) {
-      navigate(`/search?disease=${encodeURIComponent(search)}`);
+      navigate(`/search/results?disease=${encodeURIComponent(search)}`);
     }
   };
 
   const handleSelectSuggestion = (disease) => {
     setSearch(disease.name);
     setShowSuggestions(false);
-    navigate(`/search?diseaseId=${disease._id}`);
+    navigate(`/search/results?diseaseId=${disease._id}`);
   };
 
   return (
@@ -136,7 +136,7 @@ const Home = () => {
           {["Cancer", "Diabetes", "Heart Disease", "Kidney Disease"].map((term) => (
             <button
               key={term}
-              onClick={() => navigate(`/search?disease=${term}`)}
+              onClick={() => navigate(`/search/results?disease=${encodeURIComponent(term)}`)}
               className="text-sm text-teal-600 hover:underline"
             >
               {term}

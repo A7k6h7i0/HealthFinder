@@ -18,12 +18,8 @@ const OTPVerification = ({ phone, purpose, onVerified }) => {
     setError("");
     setInfo("");
     try {
-      const res = await api.post("/otp/send", { phone, purpose });
-      if (res.data?.demoOTP) {
-        setInfo(`Demo OTP: ${res.data.demoOTP} (testing mode)`);
-      } else {
-        setInfo("OTP sent successfully.");
-      }
+      await api.post("/otp/send", { phone, purpose });
+      setInfo("OTP sent successfully.");
     } catch (err) {
       setError(err.response?.data?.message || "Failed to send OTP");
     } finally {
@@ -56,12 +52,8 @@ const OTPVerification = ({ phone, purpose, onVerified }) => {
     setError("");
     setInfo("");
     try {
-      const res = await api.post("/otp/resend", { phone, purpose });
-      if (res.data?.demoOTP) {
-        setInfo(`Demo OTP: ${res.data.demoOTP} (testing mode)`);
-      } else {
-        setInfo("OTP resent successfully.");
-      }
+      await api.post("/otp/resend", { phone, purpose });
+      setInfo("OTP resent successfully.");
       setTimeout(() => setResendDisabled(false), 60000);
     } catch (err) {
       setError(err.response?.data?.message || "Failed to resend OTP");

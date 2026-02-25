@@ -4,8 +4,10 @@ import Navbar from "./components/Navbar";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Search from "./pages/Search";
+import SearchResults from "./pages/SearchResults";
 import AddService from "./pages/AddService";
 import AdminDashboard from "./pages/AdminDashboard";
+import CenterDetails from "./pages/CenterDetails";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -47,12 +49,30 @@ const AppRoutes = () => {
             <Route path="/" element={user ? <Navigate to="/search" replace /> : <Navigate to="/login" replace />} />
             <Route path="/login" element={user ? <Navigate to="/search" replace /> : <Login />} />
             <Route path="/register" element={user ? <Navigate to="/search" replace /> : <Register />} />
-            <Route path="/search" element={
-              <RequireAuth>
-                <Search />
-              </RequireAuth>
-            } />
-
+            <Route
+              path="/search"
+              element={
+                <RequireAuth>
+                  <Search />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/search/results"
+              element={
+                <RequireAuth>
+                  <SearchResults />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/center/:id"
+              element={
+                <RequireAuth>
+                  <CenterDetails />
+                </RequireAuth>
+              }
+            />
             <Route
               path="/add-service"
               element={
