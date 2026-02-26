@@ -11,25 +11,80 @@ const diseaseGroups = [
     name: "Cancer",
     description: "Oncology-related conditions",
     category: "Oncology",
-    types: ["Lung Cancer", "Breast Cancer", "Colorectal Cancer", "Blood Cancer", "Liver Cancer", "Prostate Cancer", "Cervical Cancer", "Thyroid Cancer"]
+    types: [
+      "Lung Cancer",
+      "Breast Cancer",
+      "Colorectal Cancer",
+      "Blood Cancer",
+      "Liver Cancer",
+      "Prostate Cancer",
+      "Cervical Cancer",
+      "Thyroid Cancer",
+      "Brain Tumor",
+      "Colon Cancer",
+      "Skin Cancer (Melanoma)"
+    ]
   },
   {
     name: "Heart Disease",
     description: "Cardiac and vascular conditions",
     category: "Cardiology",
-    types: ["Heart Failure", "Coronary Artery Disease", "Arrhythmia", "Hypertension", "Cardiomyopathy", "Valve Disease", "Congenital Heart Disease", "Peripheral Artery Disease"]
+    types: [
+      "Heart Failure",
+      "Coronary Artery Disease",
+      "Arrhythmia",
+      "Hypertension",
+      "Cardiomyopathy",
+      "Valve Disease",
+      "Congenital Heart Disease",
+      "Peripheral Artery Disease",
+      "Heart Attack",
+      "High Blood Pressure (Hypertension)",
+      "Ischemic Heart Disease",
+      "Cerebrovascular Disease",
+      "Peripheral Vascular Diseases"
+    ]
   },
   {
     name: "Endocrine & Metabolic Disorders",
     description: "Hormonal and metabolic disorders",
     category: "Endocrinology",
-    types: ["Type 1 Diabetes", "Type 2 Diabetes", "Gestational Diabetes", "Hypothyroidism", "Hyperthyroidism", "PCOS", "Obesity", "Metabolic Syndrome"]
+    types: [
+      "Type 1 Diabetes",
+      "Type 2 Diabetes",
+      "Gestational Diabetes",
+      "Hypothyroidism",
+      "Hyperthyroidism",
+      "PCOS",
+      "Obesity",
+      "Metabolic Syndrome",
+      "Diabetes Mellitus",
+      "Diabetes (Type 1 & 2)",
+      "Thyroid Disorders",
+      "Adrenal Disorders",
+      "Pituitary Disorders",
+      "Cushing Syndrome",
+      "Vitamin Deficiencies"
+    ]
   },
   {
     name: "Kidney & Urinary Disorders",
     description: "Nephrology and urinary conditions",
     category: "Nephrology",
-    types: ["Chronic Kidney Disease", "Kidney Stones", "Kidney Failure", "Nephrotic Syndrome", "Urinary Tract Infection", "Glomerulonephritis", "Polycystic Kidney Disease", "Urinary Incontinence"]
+    types: [
+      "Chronic Kidney Disease",
+      "Kidney Stones",
+      "Kidney Failure",
+      "Nephrotic Syndrome",
+      "Urinary Tract Infection",
+      "Glomerulonephritis",
+      "Polycystic Kidney Disease",
+      "Urinary Incontinence",
+      "Kidney Diseases",
+      "Urinary Tract Diseases",
+      "Prostate Disorders",
+      "Bladder Disorders"
+    ]
   },
   {
     name: "Liver & Biliary Disorders",
@@ -41,79 +96,599 @@ const diseaseGroups = [
     name: "Respiratory Diseases",
     description: "Lung and airway disorders",
     category: "Pulmonology",
-    types: ["Asthma", "COPD", "Pneumonia", "Tuberculosis", "Bronchitis", "Sleep Apnea", "Pulmonary Fibrosis", "Pleural Effusion"]
+    types: [
+      "Asthma",
+      "COPD",
+      "Pneumonia",
+      "Tuberculosis",
+      "Bronchitis",
+      "Sleep Apnea",
+      "Pulmonary Fibrosis",
+      "Pleural Effusion",
+      "Tuberculosis (TB)",
+      "Chronic Obstructive Pulmonary Disease (COPD)",
+      "Interstitial Lung Disease",
+      "Pulmonary Hypertension",
+      "Lung Cancer"
+    ]
   },
   {
     name: "Neurological Disorders",
     description: "Brain, nerve and spinal conditions",
     category: "Neurology",
-    types: ["Alzheimer's Disease", "Parkinson's Disease", "Epilepsy", "Migraine", "Stroke", "Multiple Sclerosis", "Neuropathy", "Meningitis"]
+    types: [
+      "Alzheimer's Disease",
+      "Parkinson's Disease",
+      "Epilepsy",
+      "Migraine",
+      "Stroke",
+      "Multiple Sclerosis",
+      "Neuropathy",
+      "Meningitis",
+      "Paralysis (Loss of Muscle Movement)",
+      "Neurodegenerative Diseases",
+      "Headache Disorders",
+      "Demyelinating Diseases",
+      "Movement Disorders",
+      "Peripheral Neuropathies"
+    ]
   },
   {
     name: "Bone & Joint Disorders",
     description: "Orthopedic and rheumatology disorders",
     category: "Orthopedics",
-    types: ["Osteoarthritis", "Rheumatoid Arthritis", "Spondylitis", "Fracture", "Osteoporosis", "Gout", "Tendon Injury", "Lumbar Disc Disease"]
+    types: [
+      "Osteoarthritis",
+      "Rheumatoid Arthritis",
+      "Spondylitis",
+      "Fracture",
+      "Osteoporosis",
+      "Gout",
+      "Tendon Injury",
+      "Lumbar Disc Disease",
+      "Arthritis",
+      "Back Pain (Spinal Disorders)",
+      "Connective Tissue Disorders",
+      "Muscle Disorders",
+      "Spine Disorders",
+      "Muscular Dystrophy",
+      "Fibromyalgia"
+    ]
   },
   {
     name: "Skin Diseases",
     description: "Dermatology conditions",
     category: "Dermatology",
-    types: ["Eczema", "Psoriasis", "Acne", "Fungal Infection", "Vitiligo", "Urticaria", "Dermatitis", "Scabies"]
+    types: [
+      "Eczema",
+      "Psoriasis",
+      "Acne",
+      "Fungal Infection",
+      "Vitiligo",
+      "Urticaria",
+      "Dermatitis",
+      "Scabies",
+      "Skin Infections",
+      "Bullous Disorders",
+      "Pigment Disorders",
+      "Melanoma"
+    ]
   },
   {
     name: "Mental Health Disorders",
     description: "Psychiatry and behavioral health conditions",
     category: "Psychiatry",
-    types: ["Depression", "Anxiety Disorder", "Bipolar Disorder", "Schizophrenia", "OCD", "PTSD", "Panic Disorder", "Substance Use Disorder"]
+    types: [
+      "Depression",
+      "Anxiety Disorder",
+      "Bipolar Disorder",
+      "Schizophrenia",
+      "OCD",
+      "PTSD",
+      "Panic Disorder",
+      "Substance Use Disorder",
+      "ADHD",
+      "Autism",
+      "Mood Disorders",
+      "Anxiety Disorders",
+      "Personality Disorders",
+      "Schizophrenia Spectrum Disorders",
+      "Intellectual Disabilities"
+    ]
   },
   {
     name: "Digestive Disorders",
     description: "Gastrointestinal conditions",
     category: "Gastroenterology",
-    types: ["GERD", "Peptic Ulcer Disease", "Irritable Bowel Syndrome", "Ulcerative Colitis", "Crohn's Disease", "Pancreatitis", "Appendicitis", "Hemorrhoids"]
+    types: [
+      "GERD",
+      "Peptic Ulcer Disease",
+      "Irritable Bowel Syndrome",
+      "Ulcerative Colitis",
+      "Crohn's Disease",
+      "Pancreatitis",
+      "Appendicitis",
+      "Hemorrhoids",
+      "Esophageal Disorders",
+      "Gastric Disorders",
+      "Liver Diseases",
+      "Pancreatic Diseases",
+      "Intestinal Disorders",
+      "Gallbladder Disorders"
+    ]
   },
   {
     name: "Infectious Diseases",
     description: "Communicable diseases and infections",
     category: "Infectious Disease",
-    types: ["COVID-19", "Dengue", "Malaria", "Typhoid", "Chikungunya", "Influenza", "HIV/AIDS", "Leptospirosis"]
+    types: [
+      "COVID-19",
+      "Dengue",
+      "Malaria",
+      "Typhoid",
+      "Chikungunya",
+      "Influenza",
+      "HIV/AIDS",
+      "Leptospirosis",
+      "Flu (Influenza)",
+      "Hepatitis",
+      "Hepatitis A",
+      "Hepatitis C",
+      "Hepatitis A, B, C",
+      "Cholera",
+      "Candidiasis",
+      "Ringworm",
+      "Amoebiasis",
+      "Tapeworm Infection",
+      "Creutzfeldt-Jakob Disease",
+      "Sexually Transmitted Infections",
+      "Bacterial Diseases",
+      "Viral Diseases",
+      "Fungal Diseases",
+      "Parasitic Diseases",
+      "Prion Diseases",
+      "Vector-Borne Diseases",
+      "Zoonotic Diseases"
+    ]
   },
   {
     name: "Women's Health",
     description: "Gynecology and obstetric conditions",
     category: "Gynecology",
-    types: ["Menstrual Disorders", "Endometriosis", "Fibroids", "Ovarian Cyst", "Infertility", "High-Risk Pregnancy", "Pelvic Inflammatory Disease", "Cervicitis"]
+    types: [
+      "Menstrual Disorders",
+      "Endometriosis",
+      "Fibroids",
+      "Ovarian Cyst",
+      "Ovarian Cysts",
+      "Infertility",
+      "High-Risk Pregnancy",
+      "Pelvic Inflammatory Disease",
+      "Cervicitis",
+      "PCOS (Polycystic Ovary Syndrome)",
+      "Cervical Cancer",
+      "Maternal Complications",
+      "Pregnancy-Induced Hypertension",
+      "Labor Complications",
+      "Postpartum Disorders"
+    ]
   },
   {
     name: "Men's Health",
     description: "Andrology and male reproductive conditions",
     category: "Andrology",
-    types: ["Erectile Dysfunction", "Male Infertility", "Prostatitis", "Benign Prostatic Hyperplasia", "Varicocele", "Low Testosterone", "Premature Ejaculation", "Hydrocele"]
+    types: [
+      "Erectile Dysfunction",
+      "Male Infertility",
+      "Prostatitis",
+      "Benign Prostatic Hyperplasia",
+      "Varicocele",
+      "Low Testosterone",
+      "Premature Ejaculation",
+      "Hydrocele",
+      "Sexual Dysfunctions"
+    ]
   },
   {
     name: "Eye Disorders",
     description: "Ophthalmic conditions",
     category: "Ophthalmology",
-    types: ["Cataract", "Glaucoma", "Conjunctivitis", "Dry Eye Syndrome", "Diabetic Retinopathy", "Refractive Error", "Macular Degeneration", "Corneal Ulcer"]
+    types: [
+      "Cataract",
+      "Glaucoma",
+      "Conjunctivitis",
+      "Dry Eye Syndrome",
+      "Diabetic Retinopathy",
+      "Refractive Error",
+      "Macular Degeneration",
+      "Corneal Ulcer",
+      "Myopia (Short Sight)",
+      "Retinal Diseases",
+      "Optic Nerve Disorders",
+      "Refractive Errors"
+    ]
   },
   {
     name: "Ear, Nose & Throat Disorders",
     description: "ENT conditions",
     category: "ENT",
-    types: ["Sinusitis", "Tonsillitis", "Otitis Media", "Hearing Loss", "Vertigo", "Rhinitis", "Nasal Polyps", "Laryngitis"]
+    types: [
+      "Sinusitis",
+      "Tonsillitis",
+      "Otitis Media",
+      "Hearing Loss",
+      "Vertigo",
+      "Rhinitis",
+      "Nasal Polyps",
+      "Laryngitis",
+      "Ear Infection",
+      "Tinnitus",
+      "Otitis",
+      "Vestibular Disorders"
+    ]
   },
   {
     name: "Blood & Immune Disorders",
     description: "Hematology and immunology conditions",
     category: "Hematology",
-    types: ["Anemia", "Thalassemia", "Hemophilia", "Sickle Cell Disease", "Leukopenia", "Autoimmune Disease", "Lupus", "Immune Thrombocytopenia"]
+    types: [
+      "Anemia",
+      "Thalassemia",
+      "Hemophilia",
+      "Sickle Cell Disease",
+      "Leukopenia",
+      "Autoimmune Disease",
+      "Lupus",
+      "Immune Thrombocytopenia",
+      "Leukemia",
+      "Lymphoma",
+      "Leukemia (Blood Cancer)",
+      "Clotting Disorders",
+      "Anemias",
+      "Coagulation Disorders",
+      "Bone Marrow Failure",
+      "Hemoglobinopathies",
+      "Immune-Related Blood Disorders",
+      "Immunodeficiency Disorders",
+      "Hypersensitivity Conditions",
+      "Autoinflammatory Syndromes",
+      "Sickle Cell Anemia"
+    ]
+  },
+  {
+    name: "Genetic & Hereditary Disorders",
+    description: "Inherited and chromosome-related disorders",
+    category: "Genetics",
+    types: [
+      "Down Syndrome",
+      "Cystic Fibrosis",
+      "Sickle Cell Anemia",
+      "Hemophilia",
+      "Thalassemia"
+    ]
+  },
+  {
+    name: "Congenital Disorders",
+    description: "Conditions present at birth",
+    category: "Congenital",
+    types: [
+      "Congenital Heart Defects",
+      "Cleft Lip",
+      "Spina Bifida"
+    ]
+  },
+  {
+    name: "Autoimmune Diseases",
+    description: "Immune system attacks healthy body tissues",
+    category: "Immunology",
+    types: [
+      "Rheumatoid Arthritis",
+      "Lupus",
+      "Multiple Sclerosis",
+      "Type 1 Diabetes",
+      "Psoriasis"
+    ]
   },
   {
     name: "Pediatric Conditions",
     description: "Common childhood conditions",
     category: "Pediatrics",
-    types: ["Neonatal Jaundice", "ADHD", "Autism Spectrum Disorder", "Cerebral Palsy", "Childhood Asthma", "Chickenpox", "Measles", "Mumps"]
+    types: [
+      "Neonatal Jaundice",
+      "ADHD",
+      "Autism Spectrum Disorder",
+      "Cerebral Palsy",
+      "Childhood Asthma",
+      "Chickenpox",
+      "Measles",
+      "Mumps",
+      "Prematurity",
+      "Neonatal Infections",
+      "Birth Trauma",
+      "Neonatal Respiratory Disorders"
+    ]
+  },
+  {
+    name: "Sleep-Wake Disorders",
+    description: "Sleep-related disorders",
+    category: "Sleep Medicine",
+    types: [
+      "Insomnia",
+      "Hypersomnia",
+      "Narcolepsy",
+      "Sleep Apnea",
+      "Circadian Rhythm Disorders"
+    ]
+  },
+  {
+    name: "Sexual Health Conditions",
+    description: "Conditions related to sexual health",
+    category: "Sexual Health",
+    types: [
+      "Gender Incongruence",
+      "STIs Related Conditions"
+    ]
+  },
+  {
+    name: "Neoplasms (Tumors & Cancers)",
+    description: "Tumor and neoplasm classifications",
+    category: "Oncology",
+    types: [
+      "Benign Neoplasms",
+      "In Situ Neoplasms",
+      "Malignant Neoplasms (By Organ)",
+      "Hematologic Malignancies",
+      "Secondary/Metastatic Neoplasms"
+    ]
+  },
+  {
+    name: "Emergency Conditions",
+    description: "Common emergency and urgent conditions",
+    category: "Emergency",
+    types: [
+      "Food Poisoning",
+      "Burns",
+      "Fractures"
+    ]
+  },
+  {
+    name: "Nutritional Disorders",
+    description: "Disorders caused by nutritional imbalance",
+    category: "Nutrition",
+    types: [
+      "Obesity",
+      "Malnutrition",
+      "Vitamin Deficiencies"
+    ]
+  },
+  {
+    name: "Environmental & Occupational Diseases",
+    description: "Conditions linked to environment and workplace exposure",
+    category: "Occupational Medicine",
+    types: [
+      "Asbestosis",
+      "Silicosis",
+      "Radiation Sickness"
+    ]
+  },
+  {
+    name: "Cardiovascular & Vascular Conditions",
+    description: "Additional heart and blood vessel disorders",
+    category: "Cardiology",
+    types: [
+      "Aortic Aneurysm",
+      "Aortic Dissection",
+      "Myocarditis",
+      "Pericarditis",
+      "Endocarditis",
+      "Angina",
+      "Dilated Cardiomyopathy",
+      "Hypertrophic Cardiomyopathy",
+      "Restrictive Cardiomyopathy",
+      "Atrial Fibrillation",
+      "Atrial Flutter",
+      "Bradycardia",
+      "Tachycardia",
+      "Deep Vein Thrombosis",
+      "Pulmonary Embolism",
+      "Peripheral Arterial Disease",
+      "Carotid Artery Disease",
+      "Varicose Veins",
+      "Chronic Venous Insufficiency",
+      "Raynaud's Disease"
+    ]
+  },
+  {
+    name: "Advanced Respiratory Conditions",
+    description: "Additional lung and airway diseases",
+    category: "Pulmonology",
+    types: [
+      "Emphysema",
+      "Bronchiectasis",
+      "Acute Respiratory Distress Syndrome",
+      "Pneumothorax",
+      "Pleurisy",
+      "Pulmonary Edema",
+      "Pulmonary Sarcoidosis",
+      "Pulmonary Fibrosis",
+      "Interstitial Pneumonia",
+      "Allergic Rhinitis",
+      "Whooping Cough",
+      "Legionnaires' Disease",
+      "Respiratory Syncytial Virus Infection",
+      "Aspiration Pneumonia",
+      "Occupational Asthma",
+      "Chronic Sinusitis",
+      "Nasal Polyposis",
+      "Obstructive Sleep Apnea",
+      "Central Sleep Apnea",
+      "Pleural Plaque Disease"
+    ]
+  },
+  {
+    name: "Advanced Neurological Conditions",
+    description: "Additional nervous system disorders",
+    category: "Neurology",
+    types: [
+      "Amyotrophic Lateral Sclerosis",
+      "Huntington's Disease",
+      "Guillain-Barre Syndrome",
+      "Myasthenia Gravis",
+      "Bell's Palsy",
+      "Trigeminal Neuralgia",
+      "Cluster Headache",
+      "Tension Headache",
+      "Essential Tremor",
+      "Cerebral Aneurysm",
+      "Subarachnoid Hemorrhage",
+      "Transient Ischemic Attack",
+      "Frontotemporal Dementia",
+      "Lewy Body Dementia",
+      "Normal Pressure Hydrocephalus",
+      "Hydrocephalus",
+      "Encephalitis",
+      "Spinal Muscular Atrophy",
+      "Motor Neuron Disease",
+      "Carpal Tunnel Syndrome"
+    ]
+  },
+  {
+    name: "Advanced Digestive, Liver & Pancreatic Conditions",
+    description: "Additional gastrointestinal and hepatopancreatic diseases",
+    category: "Gastroenterology",
+    types: [
+      "Gastritis",
+      "Celiac Disease",
+      "Diverticulosis",
+      "Diverticulitis",
+      "Ileus",
+      "Intestinal Obstruction",
+      "Acute Pancreatitis",
+      "Chronic Pancreatitis",
+      "Nonalcoholic Fatty Liver Disease",
+      "Alcoholic Liver Disease",
+      "Portal Hypertension",
+      "Hepatic Encephalopathy",
+      "Irritable Bowel Disease",
+      "Ulcerative Proctitis",
+      "Anal Fissure",
+      "Fistula in Ano",
+      "Gallbladder Polyps",
+      "Biliary Colic",
+      "Chronic Constipation",
+      "Chronic Diarrhea"
+    ]
+  },
+  {
+    name: "Autoimmune, Rheumatologic & Immune Conditions",
+    description: "Additional autoimmune and inflammatory conditions",
+    category: "Immunology",
+    types: [
+      "Sjogren Syndrome",
+      "Scleroderma",
+      "Ankylosing Spondylitis",
+      "Psoriatic Arthritis",
+      "Reactive Arthritis",
+      "Juvenile Idiopathic Arthritis",
+      "Systemic Vasculitis",
+      "Behcet's Disease",
+      "Polymyositis",
+      "Dermatomyositis",
+      "Mixed Connective Tissue Disease",
+      "Antiphospholipid Syndrome",
+      "Autoimmune Hepatitis",
+      "Hashimoto Thyroiditis",
+      "Graves Disease",
+      "IgA Nephropathy",
+      "Sarcoidosis",
+      "Celiac Sprue",
+      "Pernicious Anemia",
+      "Autoimmune Hemolytic Anemia"
+    ]
+  },
+  {
+    name: "Rare, Genetic & Metabolic Conditions",
+    description: "Additional inherited, rare, and metabolic disorders",
+    category: "Genetics",
+    types: [
+      "Turner Syndrome",
+      "Klinefelter Syndrome",
+      "Fragile X Syndrome",
+      "Marfan Syndrome",
+      "Ehlers-Danlos Syndrome",
+      "Phenylketonuria",
+      "Maple Syrup Urine Disease",
+      "Wilson Disease",
+      "Hemochromatosis",
+      "Gaucher Disease",
+      "Tay-Sachs Disease",
+      "Duchenne Muscular Dystrophy",
+      "Becker Muscular Dystrophy",
+      "Osteogenesis Imperfecta",
+      "Neurofibromatosis",
+      "Tuberous Sclerosis",
+      "Achondroplasia",
+      "Alkaptonuria",
+      "Homocystinuria",
+      "Galactosemia"
+    ]
+  },
+  {
+    name: "Additional Infectious & Tropical Diseases",
+    description: "Additional infections, vector-borne and tropical conditions",
+    category: "Infectious Disease",
+    types: [
+      "Rabies",
+      "Yellow Fever",
+      "Zika Virus Infection",
+      "Japanese Encephalitis",
+      "West Nile Fever",
+      "Chikungunya Fever",
+      "Kala-Azar",
+      "Leishmaniasis",
+      "Filariasis",
+      "Schistosomiasis",
+      "Ascariasis",
+      "Hookworm Infection",
+      "Giardiasis",
+      "Toxoplasmosis",
+      "Cryptosporidiosis",
+      "Brucellosis",
+      "Lyme Disease",
+      "Rickettsial Infection",
+      "Meningococcal Disease",
+      "Clostridioides Difficile Infection"
+    ]
+  },
+  {
+    name: "Pregnancy, Childbirth & Puerperium",
+    description: "Maternal conditions during and after pregnancy",
+    category: "Obstetrics",
+    types: [
+      "Pregnancy, Childbirth Or Puerperium"
+    ]
+  },
+  {
+    name: "ICD Condition Groups",
+    description: "Broader ICD-style condition groupings",
+    category: "General",
+    types: [
+      "Diseases of the Immune System",
+      "Diseases of the Nervous System",
+      "Diseases of the Visual System",
+      "Diseases of the Ear or Mastoid Process",
+      "Diseases of the Circulatory System",
+      "Diseases of the Respiratory System",
+      "Diseases of the Digestive System",
+      "Diseases of the Skin",
+      "Diseases of the Musculoskeletal System",
+      "Diseases of the Genitourinary System",
+      "Certain Infectious or Parasitic Diseases",
+      "Diseases of the Blood or Blood-Forming Organs",
+      "Mental, Behavioural or Neurodevelopmental Disorders",
+      "Conditions Related to Sexual Health",
+      "Certain Conditions Originating in the Perinatal Period"
+    ]
   },
   {
     name: "Dental & Oral Disorders",
@@ -125,7 +700,16 @@ const diseaseGroups = [
     name: "General & Other Conditions",
     description: "General medicine and uncategorized conditions",
     category: "General",
-    types: ["Fever", "Chronic Pain", "Fatigue Syndrome", "Allergy", "Dehydration", "Vitamin Deficiency", "Unspecified Condition", "Other"]
+    types: [
+      "Fever",
+      "Chronic Pain",
+      "Fatigue Syndrome",
+      "Allergy",
+      "Dehydration",
+      "Vitamin Deficiency",
+      "Unspecified Condition",
+      "Other"
+    ]
   }
 ];
 

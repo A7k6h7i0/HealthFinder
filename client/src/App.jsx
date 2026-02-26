@@ -1,8 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import Navbar from "./components/Navbar";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
 import Search from "./pages/Search";
 import SearchResults from "./pages/SearchResults";
 import AddService from "./pages/AddService";
@@ -30,7 +28,7 @@ const RequireAuth = ({ children }) => {
 };
 
 const AppRoutes = () => {
-  const { user, loading } = useAuth();
+  const { loading } = useAuth();
 
   if (loading) {
     return (
@@ -46,33 +44,12 @@ const AppRoutes = () => {
         <Navbar />
         <main className="flex-1">
           <Routes>
-            <Route path="/" element={user ? <Navigate to="/search" replace /> : <Navigate to="/login" replace />} />
-            <Route path="/login" element={user ? <Navigate to="/search" replace /> : <Login />} />
-            <Route path="/register" element={user ? <Navigate to="/search" replace /> : <Register />} />
-            <Route
-              path="/search"
-              element={
-                <RequireAuth>
-                  <Search />
-                </RequireAuth>
-              }
-            />
-            <Route
-              path="/search/results"
-              element={
-                <RequireAuth>
-                  <SearchResults />
-                </RequireAuth>
-              }
-            />
-            <Route
-              path="/center/:id"
-              element={
-                <RequireAuth>
-                  <CenterDetails />
-                </RequireAuth>
-              }
-            />
+            <Route path="/" element={<Navigate to="/search" replace />} />
+            <Route path="/login" element={<Navigate to="/search" replace />} />
+            <Route path="/register" element={<Navigate to="/search" replace />} />
+            <Route path="/search" element={<Search />} />
+            <Route path="/search/results" element={<SearchResults />} />
+            <Route path="/center/:id" element={<CenterDetails />} />
             <Route
               path="/add-service"
               element={
