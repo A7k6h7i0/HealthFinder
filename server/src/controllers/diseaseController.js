@@ -1,4 +1,5 @@
 import Disease from "../models/Disease.js";
+import { findRelatedDiseasesFromSymptoms, looksLikeSymptomDescription } from "../services/symptomMatcher.js";
 
 // Get all diseases (with hierarchy)
 export const getAllDiseases = async (req, res) => {
@@ -91,20 +92,34 @@ export const searchDiseases = async (req, res) => {
       return res.json([]);
     }
 
-    const diseases = await Disease.find({
+    const directMatches = await Disease.find({
       isActive: true,
       name: { $regex: q, $options: "i" }
     })
     .sort({ name: 1 })
-    .limit(20);
+    .limit(25);
 
-    // Build hierarchy for results
-    const results = diseases.map(d => ({
-      _id: d._id,
-      name: d.name,
-      parentDiseaseId: d.parentDiseaseId,
-      category: d.category
-    }));
+    let symptomMatches = [];
+    const shouldUseSymptomAi = looksLikeSymptomDescription(q) || (String(q).trim().length >= 3 && directMatches.length < 8);
+    if (shouldUseSymptomAi) {
+      const allActiveDiseases = await Disease.find(
+        { isActive: true },
+        { _id: 1, name: 1, parentDiseaseId: 1, category: 1 }
+      ).lean();
+      symptomMatches = await findRelatedDiseasesFromSymptoms(q, allActiveDiseases, 25);
+    }
+
+    const mergedMap = new Map();
+    [...symptomMatches, ...directMatches].forEach((disease) => {
+      mergedMap.set(String(disease._id), {
+        _id: disease._id,
+        name: disease.name,
+        parentDiseaseId: disease.parentDiseaseId || null,
+        category: disease.category
+      });
+    });
+
+    const results = [...mergedMap.values()].slice(0, 25);
 
     res.json(results);
   } catch (err) {

@@ -59,6 +59,36 @@ const SearchFilters = ({ filters, onChange, onSearch }) => {
     fetchHierarchy();
   }, []);
 
+  useEffect(() => {
+    const query = diseaseQuery.trim();
+    if (!query || query.length < 2) {
+      setFilteredOptions(diseaseOptions);
+      return;
+    }
+
+    const debounce = setTimeout(async () => {
+      try {
+        const res = await api.get(`/diseases/search?q=${encodeURIComponent(query)}`);
+        if (Array.isArray(res.data) && res.data.length > 0) {
+          setFilteredOptions(
+            res.data.map((disease) => ({
+              _id: disease._id,
+              name: disease.name,
+              level: 0,
+              pathLabel: disease.category ? `${disease.category} > ${disease.name}` : disease.name
+            }))
+          );
+          return;
+        }
+      } catch (err) {
+        console.error("Failed to fetch AI suggestions", err);
+      }
+      setFilteredOptions(filterSuggestions(query));
+    }, 250);
+
+    return () => clearTimeout(debounce);
+  }, [diseaseQuery, diseaseOptions]);
+
   const filterSuggestions = (query) => {
     const normalized = query.trim().toLowerCase();
     if (!normalized) return diseaseOptions;
@@ -69,7 +99,6 @@ const SearchFilters = ({ filters, onChange, onSearch }) => {
     const value = e.target.value;
     setDiseaseQuery(value);
     onChange({ ...filters, diseaseId: "", disease: value });
-    setFilteredOptions(filterSuggestions(value));
     setShowSuggestions(true);
   };
 

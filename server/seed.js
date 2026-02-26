@@ -713,6 +713,77 @@ const diseaseGroups = [
   }
 ];
 
+const buildLargeDiseaseCatalog = (existingNames, targetCount = 1500) => {
+  const organTerms = [
+    "Cardiac", "Coronary", "Myocardial", "Pericardial", "Aortic", "Vascular", "Venous", "Arterial",
+    "Pulmonary", "Bronchial", "Pleural", "Respiratory", "Tracheal", "Laryngeal",
+    "Cerebral", "Neurologic", "Neural", "Spinal", "Peripheral Nerve", "Cranial Nerve",
+    "Renal", "Nephric", "Urinary", "Bladder", "Ureteral", "Prostatic",
+    "Hepatic", "Biliary", "Pancreatic", "Gastric", "Intestinal", "Colonic", "Rectal", "Esophageal",
+    "Endocrine", "Thyroid", "Pituitary", "Adrenal", "Metabolic",
+    "Hematologic", "Lymphatic", "Marrow", "Immunologic", "Autoimmune",
+    "Dermatologic", "Cutaneous", "Epidermal", "Melanocytic",
+    "Musculoskeletal", "Skeletal", "Articular", "Cartilage", "Tendon", "Ligament", "Muscular",
+    "Ophthalmic", "Retinal", "Corneal", "Optic",
+    "Otologic", "Vestibular", "Auditory", "Sinus",
+    "Gynecologic", "Uterine", "Ovarian", "Cervical", "Obstetric",
+    "Andrologic", "Testicular", "Penile", "Reproductive",
+    "Pediatric", "Neonatal", "Geriatric"
+  ];
+
+  const pathologyTerms = [
+    "Disease", "Disorder", "Syndrome", "Condition",
+    "Inflammation", "Infection", "Injury", "Obstruction", "Insufficiency", "Failure",
+    "Fibrosis", "Degeneration", "Ischemia", "Infarction", "Edema", "Hemorrhage",
+    "Thrombosis", "Embolism", "Hypertrophy", "Atrophy", "Dysplasia", "Neoplasia",
+    "Dysfunction", "Neuropathy", "Myopathy", "Arthropathy", "Dermatosis", "Carcinoma"
+  ];
+
+  const qualifierTerms = [
+    "Acute", "Chronic", "Recurrent", "Progressive", "Severe", "Mild", "Idiopathic",
+    "Primary", "Secondary", "Hereditary", "Congenital", "Autoimmune", "Infectious",
+    "Inflammatory", "Degenerative", "Metabolic", "Functional", "Obstructive"
+  ];
+
+  const generated = [];
+  const seen = new Set(existingNames.map((name) => name.toLowerCase()));
+
+  for (const organ of organTerms) {
+    for (const pathology of pathologyTerms) {
+      const base = `${organ} ${pathology}`;
+      const baseKey = base.toLowerCase();
+      if (!seen.has(baseKey)) {
+        generated.push(base);
+        seen.add(baseKey);
+      }
+
+      for (const qualifier of qualifierTerms) {
+        if (generated.length >= targetCount) break;
+        const enriched = `${qualifier} ${organ} ${pathology}`;
+        const enrichedKey = enriched.toLowerCase();
+        if (!seen.has(enrichedKey)) {
+          generated.push(enriched);
+          seen.add(enrichedKey);
+        }
+      }
+      if (generated.length >= targetCount) break;
+    }
+    if (generated.length >= targetCount) break;
+  }
+
+  return generated.slice(0, targetCount);
+};
+
+const existingTypeNames = diseaseGroups.flatMap((group) => group.types);
+const extendedCatalogTypes = buildLargeDiseaseCatalog(existingTypeNames, 1500);
+
+diseaseGroups.push({
+  name: "Extended Clinical Disease Index",
+  description: "Large indexed list to improve search coverage",
+  category: "General",
+  types: extendedCatalogTypes
+});
+
 const diseases = diseaseGroups.map((group, index) => ({
   name: group.name,
   description: group.description,

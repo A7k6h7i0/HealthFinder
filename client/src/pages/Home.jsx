@@ -19,7 +19,7 @@ const Home = () => {
         return;
       }
       try {
-        const res = await api.get(`/diseases/search?q=${search}`);
+        const res = await api.get(`/diseases/search?q=${encodeURIComponent(search)}`);
         setSuggestions(res.data);
       } catch (_err) {
         console.error("Failed to fetch suggestions");
