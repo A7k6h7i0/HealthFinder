@@ -75,6 +75,7 @@ const SearchFilters = ({ filters, onChange, onSearch }) => {
               _id: disease._id,
               name: disease.name,
               level: 0,
+              aiGenerated: Boolean(disease.aiGenerated),
               pathLabel: disease.category ? `${disease.category} > ${disease.name}` : disease.name
             }))
           );
@@ -106,7 +107,8 @@ const SearchFilters = ({ filters, onChange, onSearch }) => {
     setDiseaseQuery(disease.name);
     setFilteredOptions(filterSuggestions(disease.name));
     setShowSuggestions(false);
-    onChange({ ...filters, diseaseId: disease._id, disease: disease.name });
+    const isAiSuggestion = Boolean(disease.aiGenerated) || String(disease._id || "").startsWith("ai-");
+    onChange({ ...filters, diseaseId: isAiSuggestion ? "" : disease._id, disease: disease.name });
   };
 
   const handleSearchClick = () => {
@@ -151,13 +153,13 @@ const SearchFilters = ({ filters, onChange, onSearch }) => {
             {!loading &&
               filteredOptions.slice(0, 60).map((disease) => (
                 <button
-                  key={disease._id}
+                  key={disease._id || disease.name}
                   type="button"
                   onClick={() => handleSelectDisease(disease)}
-                  className="w-full text-left px-3 py-2 hover:bg-slate-50 text-sm"
+                  className="w-full text-left px-3 py-2 hover:bg-slate-50 text-sm flex items-center justify-between gap-2"
                 >
                   <span className="text-slate-900">{disease.name}</span>
-                  <span className="text-xs text-slate-500 ml-2">{disease.pathLabel}</span>
+                  <span className="text-xs text-slate-500 ml-2">{disease.aiGenerated ? "AI Suggested" : disease.pathLabel}</span>
                 </button>
               ))}
           </div>

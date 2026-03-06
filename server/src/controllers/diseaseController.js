@@ -1,5 +1,13 @@
 import Disease from "../models/Disease.js";
-import { findRelatedDiseasesFromSymptoms, looksLikeSymptomDescription } from "../services/symptomMatcher.js";
+import {
+  fetchGeminiConditions,
+  findRelatedDiseasesFromSymptoms,
+  looksLikeSymptomDescription
+} from "../services/symptomMatcher.js";
+
+const escapeRegex = (value = "") => String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const normalizeSuggestion = (value = "") =>
+  String(value).toLowerCase().replace(/[^a-z0-9\s]/g, " ").replace(/\s+/g, " ").trim();
 
 // Get all diseases (with hierarchy)
 export const getAllDiseases = async (req, res) => {
@@ -91,22 +99,30 @@ export const searchDiseases = async (req, res) => {
     if (!q || q.length < 2) {
       return res.json([]);
     }
+    const queryText = String(q).trim();
 
     const directMatches = await Disease.find({
       isActive: true,
-      name: { $regex: q, $options: "i" }
+      name: { $regex: escapeRegex(queryText), $options: "i" }
     })
     .sort({ name: 1 })
     .limit(25);
 
+    const isSymptomPrompt = looksLikeSymptomDescription(queryText);
     let symptomMatches = [];
-    const shouldUseSymptomAi = looksLikeSymptomDescription(q) || (String(q).trim().length >= 3 && directMatches.length < 8);
+    let aiConditions = [];
+    const shouldUseSymptomAi = isSymptomPrompt || (queryText.length >= 3 && directMatches.length < 8);
+
     if (shouldUseSymptomAi) {
       const allActiveDiseases = await Disease.find(
         { isActive: true },
         { _id: 1, name: 1, parentDiseaseId: 1, category: 1 }
       ).lean();
-      symptomMatches = await findRelatedDiseasesFromSymptoms(q, allActiveDiseases, 25);
+
+      [symptomMatches, aiConditions] = await Promise.all([
+        findRelatedDiseasesFromSymptoms(queryText, allActiveDiseases, 25),
+        fetchGeminiConditions(queryText)
+      ]);
     }
 
     const mergedMap = new Map();
@@ -115,11 +131,32 @@ export const searchDiseases = async (req, res) => {
         _id: disease._id,
         name: disease.name,
         parentDiseaseId: disease.parentDiseaseId || null,
-        category: disease.category
+        category: disease.category,
+        aiGenerated: false
       });
     });
 
-    const results = [...mergedMap.values()].slice(0, 25);
+    const knownNames = new Set(
+      [...mergedMap.values()].map((item) => normalizeSuggestion(item.name))
+    );
+
+    const aiOnlySuggestions = [];
+    const aiSeen = new Set();
+    aiConditions.forEach((condition, index) => {
+      const normalized = normalizeSuggestion(condition);
+      if (!normalized || aiSeen.has(normalized) || knownNames.has(normalized)) return;
+      aiSeen.add(normalized);
+      aiOnlySuggestions.push({
+        _id: `ai-${index}-${normalized.replace(/\s+/g, "-")}`,
+        name: String(condition).trim(),
+        parentDiseaseId: null,
+        category: "AI Suggested",
+        aiGenerated: true
+      });
+    });
+
+    const resultLimit = isSymptomPrompt ? 12 : 25;
+    const results = [...mergedMap.values(), ...aiOnlySuggestions].slice(0, resultLimit);
 
     res.json(results);
   } catch (err) {

@@ -40,6 +40,11 @@ const Home = () => {
   const handleSelectSuggestion = (disease) => {
     setSearch(disease.name);
     setShowSuggestions(false);
+    const isAiSuggestion = Boolean(disease.aiGenerated) || String(disease._id || "").startsWith("ai-");
+    if (isAiSuggestion) {
+      navigate(`/search/results?disease=${encodeURIComponent(disease.name)}`);
+      return;
+    }
     navigate(`/search/results?diseaseId=${disease._id}`);
   };
 
@@ -100,15 +105,17 @@ const Home = () => {
               <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-xl shadow-lg z-50 overflow-hidden">
                 {suggestions.map((disease) => (
                   <button
-                    key={disease._id}
+                    key={disease._id || disease.name}
                     type="button"
                     onClick={() => handleSelectSuggestion(disease)}
                     className="w-full text-left px-4 py-3 hover:bg-slate-50 flex items-center justify-between"
                   >
                     <span className="text-slate-700">{disease.name}</span>
-                    {disease.parentDiseaseId && (
+                    {disease.aiGenerated ? (
+                      <span className="text-xs text-teal-600">AI Suggested</span>
+                    ) : disease.parentDiseaseId ? (
                       <span className="text-xs text-slate-400">Disease Type</span>
-                    )}
+                    ) : null}
                   </button>
                 ))}
               </div>

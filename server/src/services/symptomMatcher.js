@@ -294,4 +294,4 @@ export const findRelatedDiseasesFromSymptoms = async (query, diseases, limit = 2
   return [...merged.values()].slice(0, limit);
 };
 
-export { looksLikeSymptomDescription };
+export { looksLikeSymptomDescription, fetchGeminiConditions };

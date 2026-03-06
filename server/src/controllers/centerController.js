@@ -1,6 +1,7 @@
 import Center from "../models/Center.js";
 import Disease from "../models/Disease.js";
 import User from "../models/User.js";
+import { findRelatedDiseasesFromSymptoms, looksLikeSymptomDescription } from "../services/symptomMatcher.js";
 
 const OTP_VERIFICATION_WINDOW_MS = 30 * 60 * 1000;
 
@@ -48,6 +49,54 @@ const isValidPhotoUrl = (value) => {
   }
 };
 
+const escapeRegex = (value = "") => String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+const buildDiseaseSearchFilter = async (rawDiseaseQuery) => {
+  const query = String(rawDiseaseQuery || "").trim();
+  if (!query) return null;
+
+  const regexFilter = {
+    diseaseName: { $regex: escapeRegex(query), $options: "i" }
+  };
+
+  if (query.length < 3) {
+    return regexFilter;
+  }
+
+  const directDiseaseMatches = await Disease.find(
+    { isActive: true, name: { $regex: escapeRegex(query), $options: "i" } },
+    { _id: 1, name: 1, parentDiseaseId: 1, category: 1 }
+  )
+    .limit(25)
+    .lean();
+
+  const shouldUseAi = looksLikeSymptomDescription(query) || directDiseaseMatches.length < 8;
+  let aiDiseaseMatches = [];
+
+  if (shouldUseAi) {
+    const allActiveDiseases = await Disease.find(
+      { isActive: true },
+      { _id: 1, name: 1, parentDiseaseId: 1, category: 1 }
+    ).lean();
+    aiDiseaseMatches = await findRelatedDiseasesFromSymptoms(query, allActiveDiseases, 25);
+  }
+
+  const relatedDiseaseIds = [...directDiseaseMatches, ...aiDiseaseMatches]
+    .map((disease) => String(disease?._id || ""))
+    .filter(Boolean);
+
+  if (!relatedDiseaseIds.length) {
+    return regexFilter;
+  }
+
+  return {
+    $or: [
+      regexFilter,
+      { diseaseId: { $in: relatedDiseaseIds } }
+    ]
+  };
+};
+
 // Search centers with filters and pagination
 export const searchCenters = async (req, res) => {
   try {
@@ -68,8 +117,15 @@ export const searchCenters = async (req, res) => {
       query.diseaseId = diseaseId;
     }
 
-    if (disease) {
-      query.diseaseName = { $regex: disease, $options: "i" };
+    if (!diseaseId && disease) {
+      const diseaseFilter = await buildDiseaseSearchFilter(disease);
+      if (diseaseFilter) {
+        if (diseaseFilter.$or) {
+          query.$or = diseaseFilter.$or;
+        } else {
+          query.diseaseName = diseaseFilter.diseaseName;
+        }
+      }
     }
 
     if (city) {

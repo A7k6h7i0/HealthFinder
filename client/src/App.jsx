@@ -1,8 +1,10 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+ï»¿import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import Navbar from "./components/Navbar";
 import Search from "./pages/Search";
 import SearchResults from "./pages/SearchResults";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
 import AddService from "./pages/AddService";
 import AdminDashboard from "./pages/AdminDashboard";
 import CenterDetails from "./pages/CenterDetails";
@@ -45,8 +47,8 @@ const AppRoutes = () => {
         <main className="flex-1">
           <Routes>
             <Route path="/" element={<Navigate to="/search" replace />} />
-            <Route path="/login" element={<Navigate to="/search" replace />} />
-            <Route path="/register" element={<Navigate to="/search" replace />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
             <Route path="/search" element={<Search />} />
             <Route path="/search/results" element={<SearchResults />} />
             <Route path="/center/:id" element={<CenterDetails />} />
@@ -71,7 +73,7 @@ const AppRoutes = () => {
           </Routes>
         </main>
         <footer className="border-t border-slate-200 text-xs text-slate-500 py-3 text-center bg-white">
-          Kaaya Kalpa · Community-driven listings · Not medical advice
+          Kaaya Kalpa Â· Community-driven listings Â· Not medical advice
         </footer>
       </div>
     </BrowserRouter>
@@ -87,3 +89,5 @@ const App = () => {
 };
 
 export default App;
+
+
