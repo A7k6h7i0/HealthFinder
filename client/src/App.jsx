@@ -46,12 +46,33 @@ const AppRoutes = () => {
         <Navbar />
         <main className="flex-1">
           <Routes>
-            <Route path="/" element={<Navigate to="/search" replace />} />
+            <Route path="/" element={<Navigate to="/login" replace />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            <Route path="/search" element={<Search />} />
-            <Route path="/search/results" element={<SearchResults />} />
-            <Route path="/center/:id" element={<CenterDetails />} />
+            <Route
+              path="/search"
+              element={
+                <RequireAuth>
+                  <Search />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/search/results"
+              element={
+                <RequireAuth>
+                  <SearchResults />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/center/:id"
+              element={
+                <RequireAuth>
+                  <CenterDetails />
+                </RequireAuth>
+              }
+            />
             <Route
               path="/add-service"
               element={
