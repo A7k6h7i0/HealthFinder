@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import api from "../api/axiosClient";
 import SearchFilters from "../components/SearchFilters";
@@ -38,6 +38,14 @@ const SearchResults = () => {
   });
 
   const hasActiveSearch = Boolean(appliedFilters.diseaseId || String(appliedFilters.disease || "").trim());
+  const filteredCenterIds = useMemo(
+    () => new Set(filteredCenters.map((center) => String(center._id))),
+    [filteredCenters]
+  );
+  const secondaryCenters = useMemo(() => {
+    if (!hasActiveSearch) return allCenters;
+    return allCenters.filter((center) => !filteredCenterIds.has(String(center._id)));
+  }, [allCenters, hasActiveSearch, filteredCenterIds]);
 
   const fetchFilteredCenters = async (activeFilters) => {
     setLoadingFiltered(true);
@@ -177,16 +185,16 @@ const SearchResults = () => {
 
         {loadingAll && <div className="text-sm text-slate-500">Loading approved centers...</div>}
 
-        {!loadingAll && allCenters.length === 0 && (
+        {!loadingAll && secondaryCenters.length === 0 && (
           <div className="text-sm text-slate-500 bg-slate-50 p-4 rounded-lg">
-            No approved centers available right now.
+            No additional approved centers available right now.
           </div>
         )}
 
-        {!loadingAll && allCenters.length > 0 && (
+        {!loadingAll && secondaryCenters.length > 0 && (
           <>
             <div className="grid md:grid-cols-2 gap-4 mt-2">
-              {allCenters.map((center) => (
+              {secondaryCenters.map((center) => (
                 <ServiceCard key={center._id} service={center} />
               ))}
             </div>

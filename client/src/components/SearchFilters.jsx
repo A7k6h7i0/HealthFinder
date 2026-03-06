@@ -122,20 +122,19 @@ const SearchFilters = ({ filters, onChange, onSearch }) => {
     setShowSuggestions(false);
   };
 
+  const handleFormSubmit = (e) => {
+    e.preventDefault();
+    handleSearchClick();
+  };
+
   return (
-    <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-5">
+    <form onSubmit={handleFormSubmit} className="bg-white rounded-xl border border-slate-200 p-4 sm:p-5">
       <div className="relative" ref={wrapperRef}>
         <label className="block text-xs text-slate-500 mb-2">Disease Search</label>
         <input
           type="text"
           value={diseaseQuery}
           onChange={handleDiseaseChange}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              handleSearchClick();
-            }
-          }}
           onFocus={() => {
             setFilteredOptions(filterSuggestions(diseaseQuery));
             setShowSuggestions(true);
@@ -168,7 +167,7 @@ const SearchFilters = ({ filters, onChange, onSearch }) => {
 
       <div className="flex justify-end gap-2 mt-4">
         <button
-          type="button"
+          type="submit"
           onClick={handleSearchClick}
           className="px-4 py-2 text-sm text-white bg-teal-600 rounded-md hover:bg-teal-700"
         >
@@ -192,7 +191,7 @@ const SearchFilters = ({ filters, onChange, onSearch }) => {
           Clear
         </button>
       </div>
-    </div>
+    </form>
   );
 };
 

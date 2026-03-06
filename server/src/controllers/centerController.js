@@ -2,6 +2,7 @@ import Center from "../models/Center.js";
 import Disease from "../models/Disease.js";
 import User from "../models/User.js";
 import { findRelatedDiseasesFromSymptoms, looksLikeSymptomDescription } from "../services/symptomMatcher.js";
+import { diseaseCategoryLookup, majorDiseaseCatalog, normalizeTerm } from "../constants/demoDiagnosticCatalog.js";
 
 const OTP_VERIFICATION_WINDOW_MS = 30 * 60 * 1000;
 
@@ -51,6 +52,31 @@ const isValidPhotoUrl = (value) => {
 
 const escapeRegex = (value = "") => String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
+const findMappedCategory = (rawQuery = "") => {
+  const normalizedQuery = normalizeTerm(rawQuery);
+  if (!normalizedQuery) return "";
+
+  if (diseaseCategoryLookup[normalizedQuery]) {
+    return diseaseCategoryLookup[normalizedQuery];
+  }
+
+  const categoryNames = majorDiseaseCatalog.map((group) => group.category);
+  for (const [alias, category] of Object.entries(diseaseCategoryLookup)) {
+    if (normalizedQuery.includes(alias) || alias.includes(normalizedQuery)) {
+      return category;
+    }
+  }
+
+  for (const category of categoryNames) {
+    const categoryTerm = normalizeTerm(category);
+    if (normalizedQuery.includes(categoryTerm) || categoryTerm.includes(normalizedQuery)) {
+      return category;
+    }
+  }
+
+  return "";
+};
+
 const buildDiseaseSearchFilter = async (rawDiseaseQuery) => {
   const query = String(rawDiseaseQuery || "").trim();
   if (!query) return null;
@@ -85,14 +111,84 @@ const buildDiseaseSearchFilter = async (rawDiseaseQuery) => {
     .map((disease) => String(disease?._id || ""))
     .filter(Boolean);
 
-  if (!relatedDiseaseIds.length) {
+  const mappedCategory = findMappedCategory(query);
+  const parentIdsFromMatches = [...directDiseaseMatches, ...aiDiseaseMatches]
+    .map((disease) => String(disease?.parentDiseaseId || ""))
+    .filter(Boolean);
+
+  let mappedCategoryDiseaseIds = [];
+  if (mappedCategory) {
+    const mappedParent = await Disease.findOne(
+      { isActive: true, name: { $regex: `^${escapeRegex(mappedCategory)}$`, $options: "i" } },
+      { _id: 1 }
+    ).lean();
+
+    if (mappedParent?._id) {
+      const mappedChildren = await Disease.find(
+        { isActive: true, parentDiseaseId: mappedParent._id },
+        { _id: 1 }
+      ).lean();
+
+      mappedCategoryDiseaseIds = [
+        String(mappedParent._id),
+        ...mappedChildren.map((item) => String(item._id))
+      ];
+    }
+  }
+
+  const allCandidateDiseaseIds = Array.from(
+    new Set([...relatedDiseaseIds, ...parentIdsFromMatches, ...mappedCategoryDiseaseIds])
+  );
+
+  const mappedCategoryRegexFilter = mappedCategory
+    ? { diseaseName: { $regex: escapeRegex(mappedCategory), $options: "i" } }
+    : null;
+
+  if (!allCandidateDiseaseIds.length && !mappedCategoryRegexFilter) {
     return regexFilter;
   }
 
+  const orFilters = [regexFilter];
+  if (allCandidateDiseaseIds.length) {
+    orFilters.push({ diseaseId: { $in: allCandidateDiseaseIds } });
+  }
+  if (mappedCategoryRegexFilter) {
+    orFilters.push(mappedCategoryRegexFilter);
+  }
+
+  return {
+    $or: orFilters
+  };
+};
+
+const buildDiseaseIdSearchFilter = async (rawDiseaseId) => {
+  const diseaseId = String(rawDiseaseId || "").trim();
+  if (!diseaseId) return null;
+
+  const selectedDisease = await Disease.findById(
+    diseaseId,
+    { _id: 1, name: 1, parentDiseaseId: 1 }
+  ).lean();
+
+  if (!selectedDisease?._id) {
+    return { diseaseId };
+  }
+
+  const parentDiseaseId = selectedDisease.parentDiseaseId
+    ? String(selectedDisease.parentDiseaseId)
+    : String(selectedDisease._id);
+
+  const parentDisease = await Disease.findById(
+    parentDiseaseId,
+    { _id: 1, name: 1 }
+  ).lean();
+
+  const categoryName = String(parentDisease?.name || selectedDisease.name || "").trim();
+
   return {
     $or: [
-      regexFilter,
-      { diseaseId: { $in: relatedDiseaseIds } }
+      { diseaseId: parentDiseaseId },
+      ...(categoryName ? [{ diseaseName: { $regex: escapeRegex(categoryName), $options: "i" } }] : [])
     ]
   };
 };
@@ -113,19 +209,29 @@ export const searchCenters = async (req, res) => {
 
     const query = { status: "approved" };
 
+    const diseaseFilters = [];
+
     if (diseaseId) {
-      query.diseaseId = diseaseId;
+      const diseaseIdFilter = await buildDiseaseIdSearchFilter(diseaseId);
+      if (diseaseIdFilter?.$or?.length) diseaseFilters.push(diseaseIdFilter);
+      else if (diseaseIdFilter) diseaseFilters.push(diseaseIdFilter);
     }
 
-    if (!diseaseId && disease) {
-      const diseaseFilter = await buildDiseaseSearchFilter(disease);
-      if (diseaseFilter) {
-        if (diseaseFilter.$or) {
-          query.$or = diseaseFilter.$or;
-        } else {
-          query.diseaseName = diseaseFilter.diseaseName;
-        }
+    if (disease) {
+      const diseaseTextFilter = await buildDiseaseSearchFilter(disease);
+      if (diseaseTextFilter?.$or?.length) diseaseFilters.push(diseaseTextFilter);
+      else if (diseaseTextFilter) diseaseFilters.push(diseaseTextFilter);
+    }
+
+    if (diseaseFilters.length === 1) {
+      const onlyFilter = diseaseFilters[0];
+      if (onlyFilter.$or) {
+        query.$or = onlyFilter.$or;
+      } else {
+        Object.assign(query, onlyFilter);
       }
+    } else if (diseaseFilters.length > 1) {
+      query.$and = diseaseFilters.map((filter) => (filter.$or ? { $or: filter.$or } : filter));
     }
 
     if (city) {
