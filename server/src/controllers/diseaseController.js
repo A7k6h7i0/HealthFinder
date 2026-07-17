@@ -111,7 +111,7 @@ export const searchDiseases = async (req, res) => {
     const isSymptomPrompt = looksLikeSymptomDescription(queryText);
     let symptomMatches = [];
     let aiConditions = [];
-    const shouldUseSymptomAi = isSymptomPrompt || (queryText.length >= 3 && directMatches.length < 8);
+    const shouldUseSymptomAi = isSymptomPrompt || (queryText.length >= 3 && directMatches.length === 0);
 
     if (shouldUseSymptomAi) {
       const allActiveDiseases = await Disease.find(
@@ -155,7 +155,7 @@ export const searchDiseases = async (req, res) => {
       });
     });
 
-    const resultLimit = isSymptomPrompt ? 12 : 25;
+    const resultLimit = isSymptomPrompt ? 18 : 25;
     const results = [...mergedMap.values(), ...aiOnlySuggestions].slice(0, resultLimit);
 
     res.json(results);

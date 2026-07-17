@@ -1,5 +1,3 @@
-const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "";
 
 const STOP_WORDS = new Set([
   "i", "im", "i'm", "have", "having", "am", "is", "are", "was", "were", "been",
@@ -141,32 +139,42 @@ const regionContextScore = (query, diseaseName) => {
 };
 
 const buildPrompt = (query) => `
-You are a medical triage assistant for search suggestion only.
-User symptom text may include typos and grammar errors.
+You are a medical triage assistant for search suggestion only, built for users across India.
+
+The user's input may be:
+- Plain English, with typos, misspellings, or bad grammar.
+- A full natural-language sentence describing how they feel (e.g. "im suffering with lot of head pain").
+- A colloquial term or phrase from an Indian regional language, WRITTEN IN ROMAN/ENGLISH LETTERS (transliterated), such as Telugu, Hindi, Tamil, Kannada, Malayalam, Marathi, or Bengali. Examples: "kadupu noppi" (Telugu for stomach pain), "sar dard" (Hindi for headache), "vayiru vali" (Tamil for stomach pain), "hottai novu" (Kannada-adjacent for stomach ache).
+- Code-mixed / "Hinglish"-style text that blends English with a regional language in the same phrase.
+- A single vague word or a short 2-3 word colloquial phrase, not necessarily a full sentence.
 
 Task:
-1) Infer likely disease/condition names from the symptom description.
-2) Return only likely conditions, not treatments.
-3) Include both common and specific differential diagnoses.
-4) Keep output concise.
-5) Strongly prioritize anatomical context (head vs chest vs abdomen vs back).
-6) Avoid unrelated generic pain conditions when a clear body region is present.
+1) First silently interpret/translate the intent of the input, regardless of language or spelling, into the underlying symptom(s) or body-region concern.
+2) Infer likely disease/condition names (in English medical terminology) from that interpreted symptom.
+3) Return only likely conditions, not treatments.
+4) Include both common/everyday conditions and specific differential diagnoses - do not skip common ailments (cold, gastritis, migraine, etc.) in favor of only rare ones.
+5) Keep output concise.
+6) Strongly prioritize anatomical/body-region context (head vs chest vs abdomen vs back vs joints vs skin etc.) implied by the input.
+7) Avoid unrelated generic pain conditions when a clear body region is present.
+8) If the input is ambiguous or too vague to interpret confidently, return your best-effort guesses anyway rather than an empty list.
 
 Return STRICT JSON:
 {
-  "normalized_query": "string",
-  "conditions": ["condition 1", "condition 2", "... up to 15"]
+  "normalized_query": "string (the English interpretation of what the user means)",
+  "conditions": ["condition 1", "condition 2", "... up to 20"]
 }
 
-User symptom text:
+User input:
 ${query}
 `.trim();
 
-const fetchGeminiConditions = async (query) => {
+const fetchGeminiConditionsOnce = async (query) => {
+  const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "";
+  const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
   if (!GEMINI_API_KEY) return [];
 
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 8000);
+  const timeout = setTimeout(() => controller.abort(), 12000);
 
   try {
     const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(GEMINI_MODEL)}:generateContent?key=${encodeURIComponent(GEMINI_API_KEY)}`;
@@ -196,12 +204,21 @@ const fetchGeminiConditions = async (query) => {
     return parsed.conditions
       .map((item) => String(item || "").trim())
       .filter(Boolean)
-      .slice(0, 15);
+      .slice(0, 20);
   } catch {
     return [];
   } finally {
     clearTimeout(timeout);
   }
+};
+
+// A single slow/transient failure (timeout, network blip) would otherwise
+// surface as "no results" for a perfectly valid query, so retry once before
+// giving up.
+const fetchGeminiConditions = async (query) => {
+  const first = await fetchGeminiConditionsOnce(query);
+  if (first.length > 0) return first;
+  return fetchGeminiConditionsOnce(query);
 };
 
 const mapAiConditionsToKnownDiseases = (query, aiConditions, diseases) => {
@@ -222,11 +239,16 @@ const mapAiConditionsToKnownDiseases = (query, aiConditions, diseases) => {
 
       let score = 0;
       if (aiNorm === diseaseNorm) score = 1;
-      else if (diseaseNorm.includes(aiNorm) || aiNorm.includes(diseaseNorm)) score = 0.9;
+      else if (aiNorm.length >= 4 && (diseaseNorm.includes(aiNorm) || aiNorm.includes(diseaseNorm))) score = 0.9;
       else {
         const dice = diceCoefficient(aiNorm, diseaseNorm);
         const overlap = tokenOverlapScore(aiNorm, diseaseNorm);
-        score = Math.max(dice, overlap);
+        // Only trust fuzzy similarity when it's a near-identical spelling variant
+        // or the two names genuinely share most of their significant words -
+        // raw bigram overlap between unrelated multi-word medical terms is
+        // coincidentally high often enough to force bad matches otherwise.
+        if (dice >= 0.75) score = dice;
+        else if (overlap >= 0.5) score = overlap;
       }
 
       const contextBoost = regionContextScore(query, diseaseName) * 0.2;
@@ -237,7 +259,7 @@ const mapAiConditionsToKnownDiseases = (query, aiConditions, diseases) => {
       }
     });
 
-    if (best && bestScore >= 0.35 && !usedIds.has(String(best._id))) {
+    if (best && bestScore >= 0.6 && !usedIds.has(String(best._id))) {
       usedIds.add(String(best._id));
       ranked.push({
         disease: best,
@@ -272,7 +294,7 @@ const localFallbackMatch = (query, diseases, limit = 25) => {
   });
 
   return scored
-    .filter((item) => item.score > 0.6)
+    .filter((item) => item.score > 1.5)
     .sort((a, b) => b.score - a.score)
     .slice(0, limit)
     .map((item) => item.disease);
@@ -282,7 +304,7 @@ export const findRelatedDiseasesFromSymptoms = async (query, diseases, limit = 2
   const aiConditions = await fetchGeminiConditions(query);
   const aiMapped = mapAiConditionsToKnownDiseases(query, aiConditions, diseases);
 
-  if (aiMapped.length >= 8) {
+  if (aiMapped.length >= 4) {
     return aiMapped.slice(0, limit);
   }
 

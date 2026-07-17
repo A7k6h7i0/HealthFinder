@@ -7,18 +7,17 @@ export const register = async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
 
-  const { name, email, password, phone, role } = req.body;
+  const { name, email, password, phone } = req.body;
 
   try {
     const exists = await User.findOne({ email });
     if (exists) return res.status(400).json({ message: "User already exists" });
 
-    const user = await User.create({ 
-      name, 
-      email, 
+    const user = await User.create({
+      name,
+      email,
       password,
-      phone: phone || "",
-      role: role || "user"
+      phone: phone || ""
     });
     
     const token = generateToken(user);

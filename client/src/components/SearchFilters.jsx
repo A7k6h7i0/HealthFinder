@@ -26,6 +26,7 @@ const SearchFilters = ({ filters, onChange, onSearch }) => {
   const [loading, setLoading] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const wrapperRef = useRef(null);
+  const searchRequestIdRef = useRef(0);
 
   useEffect(() => {
     setDiseaseQuery(filters.disease || "");
@@ -67,8 +68,15 @@ const SearchFilters = ({ filters, onChange, onSearch }) => {
     }
 
     const debounce = setTimeout(async () => {
+      const requestId = ++searchRequestIdRef.current;
+
       try {
         const res = await api.get(`/diseases/search?q=${encodeURIComponent(query)}`);
+        // A newer keystroke may have fired another request while this one was
+        // in flight - AI-backed search can take several seconds, so responses
+        // can arrive out of order. Discard this one if it's no longer current.
+        if (requestId !== searchRequestIdRef.current) return;
+
         if (Array.isArray(res.data) && res.data.length > 0) {
           setFilteredOptions(
             res.data.map((disease) => ({
@@ -82,9 +90,12 @@ const SearchFilters = ({ filters, onChange, onSearch }) => {
           return;
         }
       } catch (err) {
+        if (requestId !== searchRequestIdRef.current) return;
         console.error("Failed to fetch AI suggestions", err);
       }
-      setFilteredOptions(filterSuggestions(query));
+      if (requestId === searchRequestIdRef.current) {
+        setFilteredOptions(filterSuggestions(query));
+      }
     }, 250);
 
     return () => clearTimeout(debounce);
